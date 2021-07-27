@@ -16,7 +16,7 @@ pipeline {
 			remote.allowAnyHosts = true
 			remote.user = "mqm"
 			//remote.logLevel = "FINEST"
-			withCredentials([usernamePassword(credentialsId: 'iibadmuserpass', passwordVariable: 'password', usernameVariable: 'userName')]) {
+			withCredentials([sshUserPrivateKey(credentialsId: 'jenkinsiib', keyFileVariable: 'identity', passphraseVariable: '', usernameVariable: 'userName')]) {
 			remote.identityFile = identity
 			sshPut remote: remote, from: 'deploymq.sh', into: './deploymq.sh'
 			sshCommand remote: remote, command: "ls -ltr"
