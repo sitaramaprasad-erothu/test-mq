@@ -1,0 +1,32 @@
+pipeline {
+  agent any
+    stages {
+
+	stage('Checkout Code'){
+            steps{
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: '.']], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/sitaramaprasad-erothu/test-mq.git']]])
+            }
+       }
+	stage('MQ Objects Creation on ESBMQINT') {
+		steps{
+		script{
+		     def remote = [:]
+			remote.name = "cvs.ad.prolifics.com"
+			remote.host = "cvs.ad.prolifics.com"
+			remote.allowAnyHosts = true
+			remote.user = "mqm"
+			//remote.logLevel = "FINEST"
+			withCredentials([sshUserPrivateKey(credentialsId: 'esbci4', keyFileVariable: 'identity', passphraseVariable: '', usernameVariable: 'userName')]) {
+			remote.identityFile = identity
+			sshPut remote: remote, from: 'deploymq.sh', into: './deploymq.sh'
+			sshCommand remote: remote, command: "ls -ltr"
+			sshCommand remote: remote, command: "chmod 750 ./deploymq.sh"
+           		sshCommand remote: remote, command: "sh ./deploymq.sh ESBMQINT INT"
+			sshRemove remote: remote, path: "deploymq.sh"
+		}
+		}
+        }
+		}
+}
+}
+
